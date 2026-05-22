@@ -13,6 +13,6 @@ export type NavItem = {
     isActive?: boolean;
     permission?: string;
     role?: string;
-    roles?: string[];       // show only when user has ANY of these roles
+    roles?: string[]; // show only when user has ANY of these roles
     excludeRoles?: string[]; // hide when user has ANY of these roles
 };

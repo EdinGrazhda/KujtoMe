@@ -8,11 +8,6 @@ import {
     Sparkles,
     Stethoscope,
     Users,
-    Activity,
-    Lock,
-    Smartphone,
-    Download,
-    ChevronDown,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -413,29 +408,6 @@ function JourneyStrip() {
 }
 
 // 👑 E RE: Komponenti për FAQ me shtrirje (Accordion)
-function FAQItem({ question, answer }: { question: string; answer: string }) {
-    const [isOpen, setIsOpen] = useState(false);
-    return (
-        <div className="border-b border-slate-200/80 py-4">
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="flex w-full items-center justify-between py-2 text-left text-base font-black text-slate-950 focus:outline-none"
-            >
-                <span>{question}</span>
-                <ChevronDown
-                    className={`size-5 text-slate-500 transition-transform duration-300 ${isOpen ? 'rotate-180 text-violet-700' : ''}`}
-                />
-            </button>
-            <div
-                className={`overflow-hidden transition-all duration-300 ${isOpen ? 'mt-2 max-h-40 pb-2' : 'max-h-0'}`}
-            >
-                <p className="text-sm leading-relaxed font-semibold text-slate-600">
-                    {answer}
-                </p>
-            </div>
-        </div>
-    );
-}
 
 export default function Welcome() {
     const { auth } = usePage<WelcomeProps>().props;
@@ -583,140 +555,6 @@ export default function Welcome() {
                                 </button>
                             ))}
                         </div>
-                    </div>
-                </section>
-
-                {/* 👑 SEKSIONI I RI 1: Statistikat (Impact Counter) */}
-                <section className="relative z-20 mx-auto max-w-7xl px-6 py-12 md:px-8">
-                    <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-slate-900 to-indigo-950 p-8 text-white shadow-xl md:p-12">
-                        <div className="pointer-events-none absolute top-0 right-0 size-64 rounded-full bg-teal-500/10 blur-3xl" />
-                        <div className="grid gap-8 text-center sm:grid-cols-3">
-                            <div className="space-y-2">
-                                <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-white/10 text-teal-400">
-                                    <Users className="size-6" />
-                                </div>
-                                <p className="text-4xl font-black tracking-tight">
-                                    10k+
-                                </p>
-                                <p className="text-sm font-bold text-slate-400">
-                                    Fëmijë të regjistruar
-                                </p>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-white/10 text-violet-400">
-                                    <Activity className="size-6" />
-                                </div>
-                                <p className="text-4xl font-black tracking-tight">
-                                    99.4%
-                                </p>
-                                <p className="text-sm font-bold text-slate-400">
-                                    Vaksinime në kohë
-                                </p>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-white/10 text-amber-400">
-                                    <Bell className="size-6" />
-                                </div>
-                                <p className="text-4xl font-black tracking-tight">
-                                    24/7
-                                </p>
-                                <p className="text-sm font-bold text-slate-400">
-                                    Sinjalizim automatik
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* 👑 SEKSIONI I RI 2: Karakteristikat e Detajuara (Features Grid) */}
-                <section className="relative z-20 mx-auto max-w-7xl px-6 py-16 md:px-8">
-                    <div className="mx-auto mb-12 max-w-3xl text-center">
-                        <p className="text-xs font-black tracking-wider text-violet-700 uppercase">
-                            Gjithçka që ju duhet
-                        </p>
-                        <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-                            Sistemi i plotë i monitorimit
-                        </h2>
-                    </div>
-                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                        <div className="rounded-2xl bg-white/80 p-6 shadow-sm ring-1 ring-slate-200/50 backdrop-blur-sm">
-                            <div className="mb-4 grid size-10 place-items-center rounded-xl bg-violet-50 text-violet-700">
-                                <Lock className="size-5" />
-                            </div>
-                            <h3 className="text-base font-black text-slate-950">
-                                Siguri Maksimale
-                            </h3>
-                            <p className="mt-2 text-xs leading-relaxed font-semibold text-slate-500">
-                                Të dhënat shëndetësore të fëmijës tuaj janë të
-                                enkriptuara dhe plotësisë të sigurta sipas
-                                standardeve më të larta.
-                            </p>
-                        </div>
-                        <div className="rounded-2xl bg-white/80 p-6 shadow-sm ring-1 ring-slate-200/50 backdrop-blur-sm">
-                            <div className="mb-4 grid size-10 place-items-center rounded-xl bg-teal-50 text-teal-700">
-                                <Smartphone className="size-5" />
-                            </div>
-                            <h3 className="text-base font-black text-slate-950">
-                                Njoftime në Telefon
-                            </h3>
-                            <p className="mt-2 text-xs leading-relaxed font-semibold text-slate-500">
-                                Pranoni njoftime inteligjente përmes SMS-it apo
-                                aplikacionit ditë para se të vijnë afatet e
-                                kontrolleve.
-                            </p>
-                        </div>
-                        <div className="rounded-2xl bg-white/80 p-6 shadow-sm ring-1 ring-slate-200/50 backdrop-blur-sm">
-                            <div className="mb-4 grid size-10 place-items-center rounded-xl bg-sky-50 text-sky-700">
-                                <Download className="size-5" />
-                            </div>
-                            <h3 className="text-base font-black text-slate-950">
-                                Eksport te Mjeku
-                            </h3>
-                            <p className="mt-2 text-xs leading-relaxed font-semibold text-slate-500">
-                                Shkarkoni historikun e plotë shëndetësor në
-                                format PDF për t'ia prezantuar çdo mjeku apo
-                                institucioni.
-                            </p>
-                        </div>
-                        <div className="rounded-2xl bg-white/80 p-6 shadow-sm ring-1 ring-slate-200/50 backdrop-blur-sm">
-                            <div className="mb-4 grid size-10 place-items-center rounded-xl bg-amber-50 text-amber-700">
-                                <Users className="size-5" />
-                            </div>
-                            <h3 className="text-base font-black text-slate-950">
-                                Multi-Fëmijë
-                            </h3>
-                            <p className="mt-2 text-xs leading-relaxed font-semibold text-slate-500">
-                                Menaxhoni profilet e të gjithë fëmijëve tuaj nga
-                                një llogari e vetme pa pasur nevojë për
-                                regjistrime të ndryshme.
-                            </p>
-                        </div>
-                    </div>
-                </section>
-
-                {/* 👑 SEKSIONI I RI 3: Pyetjet e Shpeshta (FAQ Accordion) */}
-                <section className="relative z-20 mx-auto max-w-3xl px-6 py-16 md:px-8">
-                    <div className="mb-10 text-center">
-                        <p className="text-xs font-black tracking-wider text-violet-700 uppercase">
-                            FAQ
-                        </p>
-                        <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950">
-                            Pyetjet e Shpeshta
-                        </h2>
-                    </div>
-                    <div className="space-y-2 rounded-3xl bg-white/70 p-6 shadow-sm ring-1 ring-slate-200/50 backdrop-blur-sm md:p-8">
-                        <FAQItem
-                            question="A është KujtoMe zëvendësim për librezën fizike?"
-                            answer="KujtoMe shërben si një librezë digjitale ndihmëse dhe sistem alarmi për prindërit. Ajo nuk zëvendëson dokumentet zyrtare shtetërore, por ju ndihmon të mos harroni asnjëherë asnjë datë apo kontroll shëndetësor."
-                        />
-                        <FAQItem
-                            question="A kushton përdorimi i kësaj platforme?"
-                            answer="Ofrimi bazik i librezës digjitale dhe njoftimeve standarde është plotësisht pa pagesë për të gjithë prindërit, me qëllim që asnjë fëmijë të mos mbetet pa përkujdesje."
-                        />
-                        <FAQItem
-                            question="Si mbrohen të dhënat e fëmijës tim?"
-                            answer="Siguria është prioriteti ynë kryesor. Të dhënat tuaja enkriptohen fund-më-fund (end-to-end) dhe aksesohen vetëm nga ju dhe mjeku që ju autorizoni përmes kodit unik."
-                        />
                     </div>
                 </section>
 

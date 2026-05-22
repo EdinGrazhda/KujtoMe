@@ -39,7 +39,13 @@ type FormData = {
     user_id: string;
 };
 
-export default function DoctorEdit({ doctor, doctorUsers }: { doctor: Doctor; doctorUsers: DoctorUser[] }) {
+export default function DoctorEdit({
+    doctor,
+    doctorUsers,
+}: {
+    doctor: Doctor;
+    doctorUsers: DoctorUser[];
+}) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
         { title: 'Doctors', href: '/admin/doctors' },
@@ -72,7 +78,8 @@ export default function DoctorEdit({ doctor, doctorUsers }: { doctor: Doctor; do
         setSubmitting(true);
         const payload = {
             ...form,
-            user_id: form.user_id && form.user_id !== 'none' ? form.user_id : null,
+            user_id:
+                form.user_id && form.user_id !== 'none' ? form.user_id : null,
         };
         axios
             .put(`/api/doctors/${doctor.id}`, payload)
@@ -237,16 +244,22 @@ export default function DoctorEdit({ doctor, doctorUsers }: { doctor: Doctor; do
                                         <SelectValue placeholder="Select user account (optional)" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="none">— Not linked —</SelectItem>
+                                        <SelectItem value="none">
+                                            — Not linked —
+                                        </SelectItem>
                                         {doctorUsers.map((u) => (
-                                            <SelectItem key={u.id} value={String(u.id)}>
+                                            <SelectItem
+                                                key={u.id}
+                                                value={String(u.id)}
+                                            >
                                                 {u.name} ({u.email})
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                                 <p className="text-xs text-muted-foreground">
-                                    Link this doctor record to their login account so they can see their appointments.
+                                    Link this doctor record to their login
+                                    account so they can see their appointments.
                                 </p>
                             </div>
 

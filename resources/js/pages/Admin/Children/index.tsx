@@ -203,7 +203,8 @@ export default function ChildrenIndex() {
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-xs font-bold text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">
                                                         {child.name?.[0] ?? ''}
-                                                        {child.surname?.[0] ?? ''}
+                                                        {child.surname?.[0] ??
+                                                            ''}
                                                     </div>
                                                     <div>
                                                         <p className="font-semibold text-neutral-900 dark:text-neutral-100">
@@ -217,7 +218,9 @@ export default function ChildrenIndex() {
                                                 <div className="flex items-center gap-1.5">
                                                     <Calendar className="h-3.5 w-3.5 shrink-0" />
                                                     {child.date_of_birth
-                                                        ? new Date(child.date_of_birth).toLocaleDateString()
+                                                        ? new Date(
+                                                              child.date_of_birth,
+                                                          ).toLocaleDateString()
                                                         : '—'}
                                                 </div>
                                             </td>
@@ -226,7 +229,10 @@ export default function ChildrenIndex() {
                                                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${child.gender === 'male' ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : ''} ${child.gender === 'female' ? 'bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300' : ''} ${child.gender === 'other' ? 'bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300' : ''} `}
                                                 >
                                                     {child.gender
-                                                        ? child.gender.charAt(0).toUpperCase() + child.gender.slice(1)
+                                                        ? child.gender
+                                                              .charAt(0)
+                                                              .toUpperCase() +
+                                                          child.gender.slice(1)
                                                         : '—'}
                                                 </span>
                                             </td>
