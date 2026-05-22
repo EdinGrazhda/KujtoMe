@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Confirmation;
+use App\Models\doctor;
+use App\Models\Parents;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 

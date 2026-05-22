@@ -13,7 +13,7 @@ class ParentsController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $parents = Parents::with(['child', 'confirmations'])->get();
+            $parents = Parents::with(['child', 'confirmations.vaccine'])->get();
 
             return response()->json($parents, 200);
         } catch (\Exception $e) {
@@ -34,7 +34,7 @@ class ParentsController extends Controller
             ]);
 
             $parent = Parents::create($validated);
-            $parent->load(['child', 'confirmations']);
+            $parent->load(['child', 'confirmations.vaccine']);
 
             return response()->json($parent, 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -47,7 +47,7 @@ class ParentsController extends Controller
     public function show(string $id): JsonResponse
     {
         try {
-            $parent = Parents::with(['child', 'confirmations'])->findOrFail($id);
+            $parent = Parents::with(['child', 'confirmations.vaccine'])->findOrFail($id);
 
             return response()->json($parent, 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
@@ -72,7 +72,7 @@ class ParentsController extends Controller
             ]);
 
             $parent->update($validated);
-            $parent->load(['child', 'confirmations']);
+            $parent->load(['child', 'confirmations.vaccine']);
 
             return response()->json($parent, 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {

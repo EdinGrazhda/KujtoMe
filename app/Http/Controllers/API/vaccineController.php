@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Vaccine;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class vaccineController extends Controller
@@ -29,11 +30,15 @@ class vaccineController extends Controller
                 'name'                     => 'required|string|max:255',
                 'protectsAgainst'          => 'required|string|max:255',
                 'recommended_age_months'   => 'required|string|max:255',
-                'image'                    => 'required|string|max:255',
-                'description'              => 'required|string|max:255',
+                'image'                    => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+                'description'              => 'required|string',
                 'vaccination_municipality' => 'required|string|max:255',
                 'dose'                     => 'required|string|max:255',
             ]);
+
+            if ($request->hasFile('image')) {
+                $validated['image'] = $request->file('image')->store('vaccines', 'public');
+            }
 
             $vaccine = Vaccine::create($validated);
 
@@ -68,11 +73,20 @@ class vaccineController extends Controller
                 'name'                     => 'sometimes|string|max:255',
                 'protectsAgainst'          => 'sometimes|string|max:255',
                 'recommended_age_months'   => 'sometimes|string|max:255',
-                'image'                    => 'sometimes|string|max:255',
-                'description'              => 'sometimes|string|max:255',
+                'image'                    => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+                'description'              => 'sometimes|string',
                 'vaccination_municipality' => 'sometimes|string|max:255',
                 'dose'                     => 'sometimes|string|max:255',
             ]);
+
+            if ($request->hasFile('image')) {
+                if ($vaccine->image) {
+                    Storage::disk('public')->delete($vaccine->image);
+                }
+                $validated['image'] = $request->file('image')->store('vaccines', 'public');
+            } else {
+                unset($validated['image']);
+            }
 
             $vaccine->update($validated);
 
@@ -90,6 +104,9 @@ class vaccineController extends Controller
     {
         try {
             $vaccine = Vaccine::findOrFail($id);
+            if ($vaccine->image) {
+                Storage::disk('public')->delete($vaccine->image);
+            }
             $vaccine->delete();
 
             return response()->json(['message' => 'Vaccine deleted successfully.'], 200);
