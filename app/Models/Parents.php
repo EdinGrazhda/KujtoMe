@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Confirmation;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -13,6 +14,7 @@ class Parents extends Model
     protected $table = 'parent';
 
     protected $fillable = [
+        'user_id',
         'name',
         'surname',
         'email',
@@ -20,6 +22,11 @@ class Parents extends Model
         'personal_number',
         'child_id',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     /** Legacy single-child relation (kept for backward compat) */
     public function child(): BelongsTo

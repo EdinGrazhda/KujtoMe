@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Confirmation;
 use App\Models\doctor;
 use App\Models\Parents;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,6 +15,7 @@ class Children extends Model
     protected $table = 'children';
 
     protected $fillable = [
+        'user_id',
         'name',
         'surname',
         'date_of_birth',
@@ -23,6 +25,11 @@ class Children extends Model
         'allergies',
         'chronic_diseases',
     ];
+
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     /** Legacy: parents linked via child_id column */
     public function parents(): HasMany

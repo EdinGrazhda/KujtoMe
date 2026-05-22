@@ -10,6 +10,7 @@ class doctor extends Model
     protected $table = 'doctor';
 
     protected $fillable = [
+        'user_id',
         'name',
         'surname',
         'email',
@@ -17,6 +18,11 @@ class doctor extends Model
         'child_id',
         'status',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     public function child(): BelongsTo
     {

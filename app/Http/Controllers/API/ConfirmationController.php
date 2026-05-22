@@ -8,6 +8,7 @@ use App\Models\Confirmation;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
@@ -22,7 +23,39 @@ class ConfirmationController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $confirmations = Confirmation::with(['child.doctors', 'parent', 'vaccine'])->get();
+            $user = Auth::user();
+
+            if ($user->hasRole('Parent')) {
+                $parentProfile = $user->parentProfile;
+                if ($parentProfile) {
+                    $childIds = $parentProfile->children()->pluck('children.id');
+                    $confirmations = Confirmation::with(['child.doctors', 'parent', 'vaccine', 'doctor'])
+                        ->whereIn('child_id', $childIds)
+                        ->get();
+                } else {
+                    $confirmations = collect();
+                }
+            } elseif ($user->hasRole('Doctor')) {
+                $doctorProfile = $user->doctorProfile;
+                if ($doctorProfile) {
+                    $confirmations = Confirmation::with(['child.doctors', 'parent', 'vaccine', 'doctor'])
+                        ->where('doctor_id', $doctorProfile->id)
+                        ->get();
+                } else {
+                    $confirmations = collect();
+                }
+            } elseif ($user->hasRole('Child')) {
+                $childProfile = $user->childProfile;
+                if ($childProfile) {
+                    $confirmations = Confirmation::with(['child.doctors', 'parent', 'vaccine', 'doctor'])
+                        ->where('child_id', $childProfile->id)
+                        ->get();
+                } else {
+                    $confirmations = collect();
+                }
+            } else {
+                $confirmations = Confirmation::with(['child.doctors', 'parent', 'vaccine', 'doctor'])->get();
+            }
 
             return response()->json($confirmations, 200);
         } catch (\Exception $e) {
@@ -34,10 +67,13 @@ class ConfirmationController extends Controller
     {
         try {
             $validated = $request->validate([
-                'parent_id' => 'required|integer|exists:parent,id',
-                'child_id' => 'required|integer|exists:children,id',
-                'vaccine_id' => 'required|integer|exists:vaccine,id',
-                'status' => 'sometimes|in:pending,upcoming,delayed,missed,taken',
+                'parent_id'        => 'required|integer|exists:parent,id',
+                'child_id'         => 'required|integer|exists:children,id',
+                'vaccine_id'       => 'required|integer|exists:vaccine,id',
+                'doctor_id'        => 'sometimes|nullable|integer|exists:doctor,id',
+                'status'           => 'sometimes|in:pending,upcoming,delayed,missed,taken',
+                'appointment_date' => 'sometimes|nullable|date',
+                'appointment_time' => 'sometimes|nullable|string|max:10',
             ]);
 
             $confirmation = Confirmation::create($validated);
@@ -103,7 +139,7 @@ class ConfirmationController extends Controller
     public function remind(string $id): JsonResponse
     {
         try {
-            $confirmation = Confirmation::with(['child.doctors', 'parent', 'vaccine'])->findOrFail($id);
+            $confirmation = Confirmation::with(['child.doctors', 'parent', 'vaccine', 'doctor'])->findOrFail($id);
 
             $parentEmail = $confirmation->parent?->email;
 

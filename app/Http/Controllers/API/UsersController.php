@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Children as ChildrenModel;
+use App\Models\doctor as DoctorModel;
+use App\Models\Parents;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,6 +32,7 @@ class UsersController extends Controller
             'email'    => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8',
             'role'     => 'nullable|string|exists:roles,name',
+            'child_id' => 'nullable|integer|exists:children,id',
         ]);
 
         $user = User::create([
@@ -39,6 +43,27 @@ class UsersController extends Controller
 
         if (!empty($validated['role'])) {
             $user->assignRole($validated['role']);
+
+            // Auto-link to an existing parent record if emails match
+            if ($validated['role'] === 'Parent') {
+                Parents::where('email', $user->email)
+                       ->whereNull('user_id')
+                       ->update(['user_id' => $user->id]);
+            }
+
+            // Auto-link to an existing doctor record if emails match
+            if ($validated['role'] === 'Doctor') {
+                DoctorModel::where('email', $user->email)
+                           ->whereNull('user_id')
+                           ->update(['user_id' => $user->id]);
+            }
+
+            // Link Child user to their children profile via explicit child_id
+            if ($validated['role'] === 'Child' && !empty($validated['child_id'])) {
+                ChildrenModel::where('id', $validated['child_id'])
+                             ->whereNull('user_id')
+                             ->update(['user_id' => $user->id]);
+            }
         }
 
         return response()->json([

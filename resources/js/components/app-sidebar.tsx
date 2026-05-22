@@ -2,6 +2,8 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     Baby,
     BookOpen,
+    CalendarCheck,
+    CalendarPlus,
     ClipboardCheck,
     FolderGit2,
     LayoutGrid,
@@ -62,6 +64,19 @@ const mainNavItems: NavItem[] = [
         href: '/admin/confirmations',
         icon: ClipboardCheck,
         permission: 'Confirmations_View',
+        excludeRoles: ['Doctor'],
+    },
+    {
+        title: 'Appointments',
+        href: '/admin/doctor/appointments',
+        icon: CalendarCheck,
+        role: 'Doctor',
+    },
+    {
+        title: 'Rezervo Termin',
+        href: '/reservation',
+        icon: CalendarPlus,
+        permission: 'Confirmations_Create',
     },
     {
         title: 'Roles',
@@ -96,6 +111,8 @@ export function AppSidebar() {
     const userRoles: string[] = auth.roles ?? [];
 
     const visibleNavItems = mainNavItems.filter((item) => {
+        if (item.excludeRoles?.some((r) => userRoles.includes(r))) return false;
+        if (item.roles) return item.roles.some((r) => userRoles.includes(r));
         if (item.role) return userRoles.includes(item.role);
         if (item.permission) return userPermissions.includes(item.permission);
         return true; // Dashboard — always visible

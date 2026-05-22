@@ -9,7 +9,7 @@ class Confirmation extends Model
 {
     protected $table = 'confirmation';
     
-    protected $fillable = ['parent_id', 'child_id', 'vaccine_id', 'status'];
+    protected $fillable = ['parent_id', 'child_id', 'vaccine_id', 'doctor_id', 'status', 'appointment_date', 'appointment_time'];
 
     public function child(): BelongsTo
     {
@@ -24,5 +24,10 @@ class Confirmation extends Model
     public function vaccine(): BelongsTo
     {
         return $this->belongsTo(Vaccine::class, 'vaccine_id');
+    }
+
+    public function doctor(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\doctor::class, 'doctor_id');
     }
 }

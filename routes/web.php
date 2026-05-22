@@ -4,6 +4,7 @@ use App\Models\Children;
 use App\Models\Confirmation;
 use App\Models\doctor;
 use App\Models\Parents;
+use App\Models\User;
 use App\Models\Vaccine;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -45,7 +46,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('permission:Doctors_Update')->group(function () {
         Route::get('admin/doctors/{id}/edit', function (int $id) {
             $doctor = doctor::findOrFail($id);
-            return Inertia::render('Admin/Doctor/edit', ['doctor' => $doctor]);
+            $doctorUsers = User::whereHas('roles', function ($q) {
+                $q->where('name', 'Doctor');
+            })->get(['id', 'name', 'email']);
+            return Inertia::render('Admin/Doctor/edit', [
+                'doctor'      => $doctor,
+                'doctorUsers' => $doctorUsers,
+            ]);
         })->name('admin.doctors.edit');
     });
 
@@ -81,6 +88,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('permission:Confirmations_View')->group(function () {
         Route::inertia('admin/confirmations', 'Admin/Confirmation/index')->name('admin.confirmations.index');
     });
+    // Doctor appointments page
+    Route::middleware('role:Doctor')->group(function () {
+        Route::inertia('admin/doctor/appointments', 'Admin/Doctor/appointments')->name('admin.doctor.appointments');
+    });
     Route::middleware('permission:Confirmations_Create')->group(function () {
         Route::inertia('admin/confirmations/create', 'Admin/Confirmation/create')->name('admin.confirmations.create');
     });
@@ -107,6 +118,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $confirmation = Confirmation::with(['child', 'parent', 'vaccine'])->findOrFail($id);
         return Inertia::render('Admin/Confirmation/parent', ['confirmation' => $confirmation]);
     })->name('confirmation.parent');
+
+    // Reservation page — parents can book a vaccination for their child
+    Route::middleware('permission:Confirmations_Create')->group(function () {
+        Route::get('reservation', function () {
+            $user = auth()->user();
+            $parentProfile = $user->parentProfile?->load('children');
+            $vaccines      = Vaccine::select('id', 'name', 'type', 'description', 'image')->get();
+            $doctors       = doctor::select('id', 'name', 'surname', 'email', 'phone_number', 'status')->get();
+            $confirmations = $parentProfile
+                ? Confirmation::with(['child', 'vaccine', 'doctor'])
+                    ->where('parent_id', $parentProfile->id)
+                    ->orderByDesc('id')
+                    ->get()
+                : collect();
+
+            return Inertia::render('reservation', [
+                'parentProfile' => $parentProfile,
+                'children'      => $parentProfile?->children ?? collect(),
+                'vaccines'      => $vaccines,
+                'doctors'       => $doctors,
+                'confirmations' => $confirmations,
+            ]);
+        })->name('reservation');
+    });
 });
 
 require __DIR__.'/settings.php';

@@ -17,6 +17,7 @@ import {
 import type { BreadcrumbItem } from '@/types';
 
 type Child = { id: number; name: string; surname: string };
+type DoctorUser = { id: number; name: string; email: string };
 type Doctor = {
     id: number;
     name: string;
@@ -25,6 +26,7 @@ type Doctor = {
     phone_number: string;
     child_id: number;
     status: string;
+    user_id?: number | null;
 };
 
 type FormData = {
@@ -34,9 +36,10 @@ type FormData = {
     phone_number: string;
     child_id: string;
     status: string;
+    user_id: string;
 };
 
-export default function DoctorEdit({ doctor }: { doctor: Doctor }) {
+export default function DoctorEdit({ doctor, doctorUsers }: { doctor: Doctor; doctorUsers: DoctorUser[] }) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
         { title: 'Doctors', href: '/admin/doctors' },
@@ -51,6 +54,7 @@ export default function DoctorEdit({ doctor }: { doctor: Doctor }) {
         phone_number: String(doctor.phone_number),
         child_id: String(doctor.child_id),
         status: doctor.status,
+        user_id: doctor.user_id ? String(doctor.user_id) : '',
     });
     const [errors, setErrors] = useState<Partial<FormData>>({});
     const [submitting, setSubmitting] = useState(false);
@@ -66,8 +70,12 @@ export default function DoctorEdit({ doctor }: { doctor: Doctor }) {
         e.preventDefault();
         setErrors({});
         setSubmitting(true);
+        const payload = {
+            ...form,
+            user_id: form.user_id && form.user_id !== 'none' ? form.user_id : null,
+        };
         axios
-            .put(`/api/doctors/${doctor.id}`, form)
+            .put(`/api/doctors/${doctor.id}`, payload)
             .then(() => router.visit('/admin/doctors'))
             .catch((err) => {
                 if (err.response?.status === 422)
@@ -216,6 +224,30 @@ export default function DoctorEdit({ doctor }: { doctor: Doctor }) {
                                         </p>
                                     )}
                                 </div>
+                            </div>
+
+                            {/* Linked User Account */}
+                            <div className="space-y-1.5">
+                                <Label>Linked User Account</Label>
+                                <Select
+                                    value={form.user_id}
+                                    onValueChange={(v) => set('user_id', v)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select user account (optional)" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">— Not linked —</SelectItem>
+                                        {doctorUsers.map((u) => (
+                                            <SelectItem key={u.id} value={String(u.id)}>
+                                                {u.name} ({u.email})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-xs text-muted-foreground">
+                                    Link this doctor record to their login account so they can see their appointments.
+                                </p>
                             </div>
 
                             <div className="flex justify-end gap-3 pt-2">

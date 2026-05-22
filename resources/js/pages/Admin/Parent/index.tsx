@@ -173,8 +173,9 @@ export default function ParentIndex() {
                                             <td className="px-5 py-3">
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                                                        {parent.name[0]}
-                                                        {parent.surname[0]}
+                                                        {parent.name?.[0] ?? ''}
+                                                        {parent.surname?.[0] ??
+                                                            ''}
                                                     </div>
                                                     <span className="font-semibold text-neutral-900 dark:text-neutral-100">
                                                         {parent.name}{' '}
@@ -190,12 +191,13 @@ export default function ParentIndex() {
                                                     </div>
                                                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                                         <Phone className="h-3 w-3 shrink-0" />
-                                                        {parent.phone_number}
+                                                        {parent.phone_number ??
+                                                            '—'}
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-5 py-3 text-sm text-muted-foreground">
-                                                {parent.personal_number}
+                                                {parent.personal_number ?? '—'}
                                             </td>
                                             <td className="px-5 py-3">
                                                 <div className="flex flex-wrap gap-1">

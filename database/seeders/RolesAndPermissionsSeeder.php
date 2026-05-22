@@ -67,12 +67,15 @@ class RolesAndPermissionsSeeder extends Seeder
             'Confirmations_Update',
         ]);
 
-        // Parent — view their children's data and vaccination records
+        // Parent — manage their own children and view vaccination records
         $parent = Role::firstOrCreate(['name' => 'Parent', 'guard_name' => 'web']);
         $parent->syncPermissions([
             'Children_View',
+            'Children_Create',
+            'Children_Update',
             'Vaccines_View',
             'Confirmations_View',
+            'Confirmations_Create',
         ]);
 
         // Child — view-only access to their own profile and confirmations

@@ -21,6 +21,21 @@ class User extends Authenticatable implements PasskeyUser
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable, HasRoles;
 
+    public function parentProfile(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\Parents::class, 'user_id');
+    }
+
+    public function doctorProfile(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\doctor::class, 'user_id');
+    }
+
+    public function childProfile(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\Children::class, 'user_id');
+    }
+
     /**
      * Get the attributes that should be cast.
      *

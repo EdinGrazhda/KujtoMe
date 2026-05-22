@@ -108,6 +108,20 @@ function StatusPill({ status }: { status: Confirmation['status'] }) {
     );
 }
 
+function AccessRestricted({ label }: { label: string }) {
+    return (
+        <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-neutral-200 bg-neutral-50 p-8 text-center dark:border-neutral-700 dark:bg-neutral-900/50">
+            <Shield className="h-7 w-7 text-neutral-300 dark:text-neutral-600" />
+            <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">
+                {label}
+            </p>
+            <p className="text-xs text-neutral-400">
+                You don&apos;t have permission to view this section.
+            </p>
+        </div>
+    );
+}
+
 function StatCard({
     icon: Icon,
     label,
@@ -198,7 +212,7 @@ export default function Dashboard() {
 
     return (
         <>
-            <Head title="Dashboard — No Child Missed" />
+            <Head title="Dashboard — KujtoMe" />
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-6">
                 {/* Header */}
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
@@ -208,7 +222,7 @@ export default function Dashboard() {
                                 <Heart className="h-4 w-4 text-white" />
                             </div>
                             <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                                No Child Missed
+                                KujtoMe Dashboard
                             </h1>
                         </div>
                         <p className="mt-1 text-sm text-neutral-500">
@@ -226,312 +240,341 @@ export default function Dashboard() {
 
                 {/* Stat cards */}
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                    <StatCard
-                        icon={Baby}
-                        label="Total Children"
-                        value={loading ? '—' : children.length || 3}
-                        color="bg-sky-500"
-                        sub="Registered profiles"
-                    />
-                    <StatCard
-                        icon={AlertTriangle}
-                        label="Missed"
-                        value={loading ? '—' : counts.missed}
-                        color="bg-red-500"
-                        sub="Urgent attention"
-                    />
-                    <StatCard
-                        icon={Clock}
-                        label="Delayed"
-                        value={loading ? '—' : counts.delayed}
-                        color="bg-orange-500"
-                        sub="Needs follow-up"
-                    />
-                    <StatCard
-                        icon={Bell}
-                        label="Upcoming"
-                        value={loading ? '—' : counts.upcoming}
-                        color="bg-amber-500"
-                        sub="Action required"
-                    />
-                    <StatCard
-                        icon={CheckCircle2}
-                        label="Taken"
-                        value={loading ? '—' : counts.taken}
-                        color="bg-emerald-500"
-                        sub="Completed"
-                    />
+                    {canViewChildren ? (
+                        <StatCard
+                            icon={Baby}
+                            label="Total Children"
+                            value={loading ? '—' : children.length || 3}
+                            color="bg-sky-500"
+                            sub="Registered profiles"
+                        />
+                    ) : null}
+                    {canViewConfirmations ? (
+                        <>
+                            <StatCard
+                                icon={AlertTriangle}
+                                label="Missed"
+                                value={loading ? '—' : counts.missed}
+                                color="bg-red-500"
+                                sub="Urgent attention"
+                            />
+                            <StatCard
+                                icon={Clock}
+                                label="Delayed"
+                                value={loading ? '—' : counts.delayed}
+                                color="bg-orange-500"
+                                sub="Needs follow-up"
+                            />
+                            <StatCard
+                                icon={Bell}
+                                label="Upcoming"
+                                value={loading ? '—' : counts.upcoming}
+                                color="bg-amber-500"
+                                sub="Action required"
+                            />
+                            <StatCard
+                                icon={CheckCircle2}
+                                label="Taken"
+                                value={loading ? '—' : counts.taken}
+                                color="bg-emerald-500"
+                                sub="Completed"
+                            />
+                        </>
+                    ) : null}
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-3">
                     {/* 🚨 No Child Missed alert section */}
-                    <div className="rounded-2xl border border-red-100 bg-red-50 p-5 lg:col-span-2 dark:border-red-900/40 dark:bg-red-950/20">
-                        <div className="mb-4 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500">
-                                    <Shield className="h-4 w-4 text-white" />
+                    {canViewConfirmations ? (
+                        <div className="rounded-2xl border border-red-100 bg-red-50 p-5 lg:col-span-2 dark:border-red-900/40 dark:bg-red-950/20">
+                            <div className="mb-4 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500">
+                                        <Shield className="h-4 w-4 text-white" />
+                                    </div>
+                                    <div>
+                                        <h2 className="font-bold text-red-900 dark:text-red-200">
+                                            KujtoMe — Urgent Alerts
+                                        </h2>
+                                        <p className="text-xs text-red-600 dark:text-red-400">
+                                            {highRisk.length} children need
+                                            immediate attention
+                                        </p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h2 className="font-bold text-red-900 dark:text-red-200">
-                                        No Child Missed — Urgent Alerts
-                                    </h2>
-                                    <p className="text-xs text-red-600 dark:text-red-400">
-                                        {highRisk.length} children need
-                                        immediate attention
+                                <Link
+                                    href="/admin/confirmations?status=missed"
+                                    className="text-xs font-semibold text-red-600 hover:underline"
+                                >
+                                    View all →
+                                </Link>
+                            </div>
+
+                            {loading ? (
+                                <div className="space-y-3">
+                                    {[1, 2, 3].map((i) => (
+                                        <div
+                                            key={i}
+                                            className="h-16 animate-pulse rounded-xl bg-red-100 dark:bg-red-900/30"
+                                        />
+                                    ))}
+                                </div>
+                            ) : highRisk.length === 0 ? (
+                                <div className="flex flex-col items-center gap-2 py-8 text-center">
+                                    <CheckCircle2 className="h-10 w-10 text-emerald-400" />
+                                    <p className="font-semibold text-emerald-700">
+                                        All children are on track!
+                                    </p>
+                                    <p className="text-sm text-emerald-600">
+                                        No missed or delayed vaccinations.
                                     </p>
                                 </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {highRisk.map((c) => (
+                                        <div
+                                            key={c.id}
+                                            className="flex items-center justify-between rounded-xl bg-white/70 px-4 py-3 shadow-sm dark:bg-neutral-900/50"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div
+                                                    className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-white ${c.status === 'missed' ? 'bg-red-500' : 'bg-orange-500'}`}
+                                                >
+                                                    {c.child?.name?.[0]}
+                                                    {c.child?.surname?.[0]}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+                                                        {c.child?.name}{' '}
+                                                        {c.child?.surname}
+                                                    </p>
+                                                    <p className="text-xs text-neutral-500">
+                                                        {c.vaccine?.name} ·
+                                                        Parent: {c.parent?.name}{' '}
+                                                        {c.parent?.surname}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <StatusPill status={c.status} />
+                                                <Link
+                                                    href={`/admin/confirmations/${c.id}/edit`}
+                                                    className="rounded-lg p-1.5 transition-colors hover:bg-red-100 dark:hover:bg-red-900/30"
+                                                >
+                                                    <ChevronRight className="h-4 w-4 text-red-500" />
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="lg:col-span-2">
+                            <AccessRestricted label="Confirmations view permission required" />
+                        </div>
+                    )}
+
+                    {/* Risk Score Overview */}
+                    {canViewConfirmations ? (
+                        <div className="rounded-2xl border border-neutral-200/60 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                            <div className="mb-4 flex items-center gap-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500">
+                                    <TrendingUp className="h-4 w-4 text-white" />
+                                </div>
+                                <h2 className="font-bold text-neutral-900 dark:text-neutral-100">
+                                    Risk Overview
+                                </h2>
+                            </div>
+
+                            <div className="space-y-3">
+                                {[
+                                    {
+                                        label: 'High Risk',
+                                        desc: 'Missed / Delayed',
+                                        count: highRisk.length,
+                                        total: confirmations.length,
+                                        color: 'bg-red-500',
+                                        text: 'text-red-600',
+                                    },
+                                    {
+                                        label: 'Medium Risk',
+                                        desc: 'Upcoming, unconfirmed',
+                                        count: mediumRisk.length,
+                                        total: confirmations.length,
+                                        color: 'bg-amber-400',
+                                        text: 'text-amber-600',
+                                    },
+                                    {
+                                        label: 'Low Risk',
+                                        desc: 'Taken / completed',
+                                        count: counts.taken,
+                                        total: confirmations.length,
+                                        color: 'bg-emerald-500',
+                                        text: 'text-emerald-600',
+                                    },
+                                ].map((r) => (
+                                    <div key={r.label}>
+                                        <div className="mb-1 flex items-center justify-between text-sm">
+                                            <div>
+                                                <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+                                                    {r.label}
+                                                </span>
+                                                <span className="ml-1.5 text-xs text-neutral-400">
+                                                    {r.desc}
+                                                </span>
+                                            </div>
+                                            <span
+                                                className={`font-bold ${r.text}`}
+                                            >
+                                                {r.count}
+                                            </span>
+                                        </div>
+                                        <div className="h-2 overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
+                                            <div
+                                                className={`h-full rounded-full transition-all ${r.color}`}
+                                                style={{
+                                                    width:
+                                                        confirmations.length > 0
+                                                            ? `${(r.count / confirmations.length) * 100}%`
+                                                            : '0%',
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="mt-5 rounded-xl bg-neutral-50 p-4 dark:bg-neutral-800">
+                                <div className="flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+                                    <Stethoscope className="h-4 w-4 text-violet-500" />
+                                    Quick Stats
+                                </div>
+                                <div className="mt-3 grid grid-cols-2 gap-2 text-center">
+                                    <div className="rounded-lg bg-white p-2 shadow-sm dark:bg-neutral-900">
+                                        <div className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
+                                            {loading
+                                                ? '—'
+                                                : children.length || 3}
+                                        </div>
+                                        <div className="text-xs text-neutral-400">
+                                            Children
+                                        </div>
+                                    </div>
+                                    <div className="rounded-lg bg-white p-2 shadow-sm dark:bg-neutral-900">
+                                        <div className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
+                                            {loading
+                                                ? '—'
+                                                : doctors.length || 2}
+                                        </div>
+                                        <div className="text-xs text-neutral-400">
+                                            Doctors
+                                        </div>
+                                    </div>
+                                    <div className="rounded-lg bg-white p-2 shadow-sm dark:bg-neutral-900">
+                                        <div className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
+                                            {loading
+                                                ? '—'
+                                                : confirmations.length}
+                                        </div>
+                                        <div className="text-xs text-neutral-400">
+                                            Confirmations
+                                        </div>
+                                    </div>
+                                    <div className="rounded-lg bg-white p-2 shadow-sm dark:bg-neutral-900">
+                                        <div className="text-xl font-bold text-emerald-600">
+                                            {confirmations.length > 0
+                                                ? Math.round(
+                                                      (counts.taken /
+                                                          confirmations.length) *
+                                                          100,
+                                                  )
+                                                : 0}
+                                            %
+                                        </div>
+                                        <div className="text-xs text-neutral-400">
+                                            Completion
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <AccessRestricted label="Confirmations view permission required" />
+                    )}
+                </div>
+
+                {/* Recent confirmations table */}
+                {canViewConfirmations ? (
+                    <div className="rounded-2xl border border-neutral-200/60 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                        <div className="flex items-center justify-between border-b border-neutral-100 p-5 dark:border-neutral-800">
+                            <div className="flex items-center gap-2">
+                                <Users className="h-4 w-4 text-neutral-400" />
+                                <h2 className="font-bold text-neutral-900 dark:text-neutral-100">
+                                    Recent Confirmations
+                                </h2>
                             </div>
                             <Link
-                                href="/admin/confirmations?status=missed"
-                                className="text-xs font-semibold text-red-600 hover:underline"
+                                href="/admin/confirmations"
+                                className="text-xs font-semibold text-emerald-600 hover:underline"
                             >
-                                View all →
+                                See all →
                             </Link>
                         </div>
 
                         {loading ? (
-                            <div className="space-y-3">
-                                {[1, 2, 3].map((i) => (
+                            <div className="space-y-3 p-5">
+                                {[1, 2, 3, 4].map((i) => (
                                     <div
                                         key={i}
-                                        className="h-16 animate-pulse rounded-xl bg-red-100 dark:bg-red-900/30"
+                                        className="h-12 animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800"
                                     />
                                 ))}
                             </div>
-                        ) : highRisk.length === 0 ? (
-                            <div className="flex flex-col items-center gap-2 py-8 text-center">
-                                <CheckCircle2 className="h-10 w-10 text-emerald-400" />
-                                <p className="font-semibold text-emerald-700">
-                                    All children are on track!
-                                </p>
-                                <p className="text-sm text-emerald-600">
-                                    No missed or delayed vaccinations.
-                                </p>
-                            </div>
                         ) : (
-                            <div className="space-y-2">
-                                {highRisk.map((c) => (
-                                    <div
-                                        key={c.id}
-                                        className="flex items-center justify-between rounded-xl bg-white/70 px-4 py-3 shadow-sm dark:bg-neutral-900/50"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div
-                                                className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-white ${c.status === 'missed' ? 'bg-red-500' : 'bg-orange-500'}`}
-                                            >
+                            <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                                {(confirmations.length
+                                    ? confirmations
+                                    : MOCK_CONFIRMATIONS
+                                )
+                                    .slice(0, 6)
+                                    .map((c) => (
+                                        <div
+                                            key={c.id}
+                                            className="flex items-center gap-4 px-5 py-3 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                                        >
+                                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-xs font-bold text-neutral-600 dark:bg-neutral-800">
                                                 {c.child?.name?.[0]}
                                                 {c.child?.surname?.[0]}
                                             </div>
-                                            <div>
-                                                <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm font-semibold text-neutral-800 dark:text-neutral-200">
                                                     {c.child?.name}{' '}
                                                     {c.child?.surname}
                                                 </p>
-                                                <p className="text-xs text-neutral-500">
-                                                    {c.vaccine?.name} · Parent:{' '}
-                                                    {c.parent?.name}{' '}
-                                                    {c.parent?.surname}
+                                                <p className="truncate text-xs text-neutral-400">
+                                                    {c.vaccine?.name}
                                                 </p>
                                             </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
+                                            <div className="hidden text-xs text-neutral-400 sm:block">
+                                                {c.parent?.name}{' '}
+                                                {c.parent?.surname}
+                                            </div>
                                             <StatusPill status={c.status} />
                                             <Link
                                                 href={`/admin/confirmations/${c.id}/edit`}
-                                                className="rounded-lg p-1.5 transition-colors hover:bg-red-100 dark:hover:bg-red-900/30"
+                                                className="rounded-lg p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                                             >
-                                                <ChevronRight className="h-4 w-4 text-red-500" />
+                                                <ChevronRight className="h-4 w-4 text-neutral-400" />
                                             </Link>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
                             </div>
                         )}
                     </div>
-
-                    {/* Risk Score Overview */}
-                    <div className="rounded-2xl border border-neutral-200/60 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-                        <div className="mb-4 flex items-center gap-2">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500">
-                                <TrendingUp className="h-4 w-4 text-white" />
-                            </div>
-                            <h2 className="font-bold text-neutral-900 dark:text-neutral-100">
-                                Risk Overview
-                            </h2>
-                        </div>
-
-                        <div className="space-y-3">
-                            {[
-                                {
-                                    label: 'High Risk',
-                                    desc: 'Missed / Delayed',
-                                    count: highRisk.length,
-                                    total: confirmations.length,
-                                    color: 'bg-red-500',
-                                    text: 'text-red-600',
-                                },
-                                {
-                                    label: 'Medium Risk',
-                                    desc: 'Upcoming, unconfirmed',
-                                    count: mediumRisk.length,
-                                    total: confirmations.length,
-                                    color: 'bg-amber-400',
-                                    text: 'text-amber-600',
-                                },
-                                {
-                                    label: 'Low Risk',
-                                    desc: 'Taken / completed',
-                                    count: counts.taken,
-                                    total: confirmations.length,
-                                    color: 'bg-emerald-500',
-                                    text: 'text-emerald-600',
-                                },
-                            ].map((r) => (
-                                <div key={r.label}>
-                                    <div className="mb-1 flex items-center justify-between text-sm">
-                                        <div>
-                                            <span className="font-semibold text-neutral-700 dark:text-neutral-300">
-                                                {r.label}
-                                            </span>
-                                            <span className="ml-1.5 text-xs text-neutral-400">
-                                                {r.desc}
-                                            </span>
-                                        </div>
-                                        <span className={`font-bold ${r.text}`}>
-                                            {r.count}
-                                        </span>
-                                    </div>
-                                    <div className="h-2 overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
-                                        <div
-                                            className={`h-full rounded-full transition-all ${r.color}`}
-                                            style={{
-                                                width:
-                                                    confirmations.length > 0
-                                                        ? `${(r.count / confirmations.length) * 100}%`
-                                                        : '0%',
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="mt-5 rounded-xl bg-neutral-50 p-4 dark:bg-neutral-800">
-                            <div className="flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-                                <Stethoscope className="h-4 w-4 text-violet-500" />
-                                Quick Stats
-                            </div>
-                            <div className="mt-3 grid grid-cols-2 gap-2 text-center">
-                                <div className="rounded-lg bg-white p-2 shadow-sm dark:bg-neutral-900">
-                                    <div className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
-                                        {loading ? '—' : children.length || 3}
-                                    </div>
-                                    <div className="text-xs text-neutral-400">
-                                        Children
-                                    </div>
-                                </div>
-                                <div className="rounded-lg bg-white p-2 shadow-sm dark:bg-neutral-900">
-                                    <div className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
-                                        {loading ? '—' : doctors.length || 2}
-                                    </div>
-                                    <div className="text-xs text-neutral-400">
-                                        Doctors
-                                    </div>
-                                </div>
-                                <div className="rounded-lg bg-white p-2 shadow-sm dark:bg-neutral-900">
-                                    <div className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
-                                        {loading ? '—' : confirmations.length}
-                                    </div>
-                                    <div className="text-xs text-neutral-400">
-                                        Confirmations
-                                    </div>
-                                </div>
-                                <div className="rounded-lg bg-white p-2 shadow-sm dark:bg-neutral-900">
-                                    <div className="text-xl font-bold text-emerald-600">
-                                        {confirmations.length > 0
-                                            ? Math.round(
-                                                  (counts.taken /
-                                                      confirmations.length) *
-                                                      100,
-                                              )
-                                            : 0}
-                                        %
-                                    </div>
-                                    <div className="text-xs text-neutral-400">
-                                        Completion
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Recent confirmations table */}
-                <div className="rounded-2xl border border-neutral-200/60 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-                    <div className="flex items-center justify-between border-b border-neutral-100 p-5 dark:border-neutral-800">
-                        <div className="flex items-center gap-2">
-                            <Users className="h-4 w-4 text-neutral-400" />
-                            <h2 className="font-bold text-neutral-900 dark:text-neutral-100">
-                                Recent Confirmations
-                            </h2>
-                        </div>
-                        <Link
-                            href="/admin/confirmations"
-                            className="text-xs font-semibold text-emerald-600 hover:underline"
-                        >
-                            See all →
-                        </Link>
-                    </div>
-
-                    {loading ? (
-                        <div className="space-y-3 p-5">
-                            {[1, 2, 3, 4].map((i) => (
-                                <div
-                                    key={i}
-                                    className="h-12 animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800"
-                                />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                            {(confirmations.length
-                                ? confirmations
-                                : MOCK_CONFIRMATIONS
-                            )
-                                .slice(0, 6)
-                                .map((c) => (
-                                    <div
-                                        key={c.id}
-                                        className="flex items-center gap-4 px-5 py-3 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
-                                    >
-                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-xs font-bold text-neutral-600 dark:bg-neutral-800">
-                                            {c.child?.name?.[0]}
-                                            {c.child?.surname?.[0]}
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <p className="truncate text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                                                {c.child?.name}{' '}
-                                                {c.child?.surname}
-                                            </p>
-                                            <p className="truncate text-xs text-neutral-400">
-                                                {c.vaccine?.name}
-                                            </p>
-                                        </div>
-                                        <div className="hidden text-xs text-neutral-400 sm:block">
-                                            {c.parent?.name} {c.parent?.surname}
-                                        </div>
-                                        <StatusPill status={c.status} />
-                                        <Link
-                                            href={`/admin/confirmations/${c.id}/edit`}
-                                            className="rounded-lg p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                                        >
-                                            <ChevronRight className="h-4 w-4 text-neutral-400" />
-                                        </Link>
-                                    </div>
-                                ))}
-                        </div>
-                    )}
-                </div>
+                ) : (
+                    <AccessRestricted label="Confirmations view permission required" />
+                )}
             </div>
         </>
     );

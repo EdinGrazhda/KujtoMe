@@ -7,6 +7,7 @@ use App\Models\Children;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -20,7 +21,24 @@ class ChildrenController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $children = Children::all();
+            $user = Auth::user();
+
+            if ($user->hasRole('Parent')) {
+                $parentProfile = $user->parentProfile;
+                $children = $parentProfile
+                    ? $parentProfile->children()->get()
+                    : collect();
+            } elseif ($user->hasRole('Doctor')) {
+                $doctorProfile = $user->doctorProfile;
+                $children = $doctorProfile?->child_id
+                    ? Children::findMany([$doctorProfile->child_id])
+                    : collect();
+            } elseif ($user->hasRole('Child')) {
+                $childProfile = $user->childProfile;
+                $children = $childProfile ? Children::findMany([$childProfile->id]) : collect();
+            } else {
+                $children = Children::all();
+            }
 
             return response()->json($children, 200);
         } catch (\Exception $e) {

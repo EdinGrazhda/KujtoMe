@@ -30,6 +30,7 @@ export type ConfirmationRecord = {
     };
     parent?: { id: number; name: string; surname: string; email?: string };
     vaccine?: { id: number; name: string };
+    doctor?: { id: number; name: string; surname: string };
 };
 
 const riskLevel = (
@@ -240,8 +241,8 @@ export function ConfirmationCard({
                             {
                                 icon: Stethoscope,
                                 label: 'Doctor',
-                                value: c.child?.doctors?.[0]
-                                    ? `${c.child.doctors[0].name} ${c.child.doctors[0].surname}`
+                                value: c.doctor
+                                    ? `${c.doctor.name} ${c.doctor.surname}`
                                     : 'No doctor assigned',
                             },
                             {

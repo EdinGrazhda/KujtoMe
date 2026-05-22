@@ -33,7 +33,7 @@ class DoctorController extends Controller
                 'name'         => 'required|string|max:255',
                 'surname'      => 'required|string|max:255',
                 'email'        => 'required|email|unique:doctor,email',
-                'phone_number' => 'required|integer',
+                'phone_number' => 'required|string|max:30',
                 'child_id'     => 'required|integer|exists:children,id',
                 'status'       => 'required|in:pending,missed',
             ]);
@@ -69,9 +69,10 @@ class DoctorController extends Controller
                 'name'         => 'sometimes|string|max:255',
                 'surname'      => 'sometimes|string|max:255',
                 'email'        => ['sometimes', 'email', Rule::unique('doctor', 'email')->ignore($doctor->id)],
-                'phone_number' => 'sometimes|integer',
+                'phone_number' => 'sometimes|string|max:30',
                 'child_id'     => 'sometimes|integer|exists:children,id',
                 'status'       => 'sometimes|in:pending,missed',
+                'user_id'      => 'sometimes|nullable|integer|exists:users,id',
             ]);
 
             $doctor->update($validated);

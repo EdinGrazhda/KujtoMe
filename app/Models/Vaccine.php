@@ -13,6 +13,7 @@ class Vaccine extends Model
     protected $fillable = [
         'code',
         'name',
+        'type',
         'protectsAgainst',
         'recommended_age_months',
         'image',
