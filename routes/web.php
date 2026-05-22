@@ -33,7 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('admin/parents', 'Admin/Parent/index')->name('admin.parents.index');
     Route::inertia('admin/parents/create', 'Admin/Parent/create')->name('admin.parents.create');
     Route::get('admin/parents/{id}/edit', function (int $id) {
-        $parent = Parents::findOrFail($id);
+        $parent = Parents::with(['children'])->findOrFail($id);
         return Inertia::render('Admin/Parent/edit', ['parent' => $parent]);
     })->name('admin.parents.edit');
 

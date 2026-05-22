@@ -1,16 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import axios from 'axios';
+import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 
 type Child = { id: number; name: string; surname: string };
 
@@ -20,10 +14,9 @@ type FormState = {
     email: string;
     phone_number: string;
     personal_number: string;
-    child_id: string;
 };
 
-type FieldErrors = Partial<Record<keyof FormState, string[]>>;
+type FieldErrors = Partial<Record<keyof FormState | 'child_ids', string[]>>;
 
 const empty: FormState = {
     name: '',
@@ -31,7 +24,6 @@ const empty: FormState = {
     email: '',
     phone_number: '',
     personal_number: '',
-    child_id: '',
 };
 
 export default function Create() {
@@ -39,6 +31,7 @@ export default function Create() {
     const [errors, setErrors] = useState<FieldErrors>({});
     const [submitting, setSubmitting] = useState(false);
     const [children, setChildren] = useState<Child[]>([]);
+    const [selectedChildIds, setSelectedChildIds] = useState<number[]>([]);
 
     useEffect(() => {
         axios
@@ -50,7 +43,12 @@ export default function Create() {
     const set = (field: keyof FormState, value: string) =>
         setForm((prev) => ({ ...prev, [field]: value }));
 
-    const err = (field: keyof FormState) => errors[field]?.[0];
+    const err = (field: keyof FormState | 'child_ids') => errors[field]?.[0];
+
+    const toggleChild = (id: number) =>
+        setSelectedChildIds((prev) =>
+            prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+        );
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -60,7 +58,7 @@ export default function Create() {
             await axios.post('/api/parents', {
                 ...form,
                 phone_number: Number(form.phone_number),
-                child_id: Number(form.child_id),
+                child_ids: selectedChildIds,
             });
             router.visit('/admin/parents');
         } catch (error: unknown) {
@@ -173,38 +171,61 @@ export default function Create() {
                                 </p>
                             )}
                         </div>
-                        <div className="space-y-1.5">
-                            <Label>Assigned Child</Label>
-                            <Select
-                                value={form.child_id}
-                                onValueChange={(v) => set('child_id', v)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a child" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {children.length === 0 ? (
-                                        <div className="px-2 py-3 text-center text-sm text-muted-foreground">
-                                            No children registered
-                                        </div>
-                                    ) : (
-                                        children.map((c) => (
-                                            <SelectItem
-                                                key={c.id}
-                                                value={String(c.id)}
+                    </div>
+
+                    {/* Children multi-select */}
+                    <div className="space-y-1.5">
+                        <Label>
+                            Assigned Children
+                            <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                                ({selectedChildIds.length} selected)
+                            </span>
+                        </Label>
+                        {children.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">
+                                No children registered yet.
+                            </p>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                                {children.map((c) => {
+                                    const checked = selectedChildIds.includes(
+                                        c.id,
+                                    );
+                                    return (
+                                        <button
+                                            key={c.id}
+                                            type="button"
+                                            onClick={() => toggleChild(c.id)}
+                                            className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${
+                                                checked
+                                                    ? 'border-primary bg-primary/5 text-primary'
+                                                    : 'border-border hover:border-primary/40 hover:bg-muted/50'
+                                            }`}
+                                        >
+                                            <span
+                                                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                                                    checked
+                                                        ? 'border-primary bg-primary text-primary-foreground'
+                                                        : 'border-muted-foreground/40'
+                                                }`}
                                             >
+                                                {checked && (
+                                                    <Check className="h-2.5 w-2.5" />
+                                                )}
+                                            </span>
+                                            <span className="truncate font-medium">
                                                 {c.name} {c.surname}
-                                            </SelectItem>
-                                        ))
-                                    )}
-                                </SelectContent>
-                            </Select>
-                            {err('child_id') && (
-                                <p className="text-xs text-destructive">
-                                    {err('child_id')}
-                                </p>
-                            )}
-                        </div>
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                        {err('child_ids') && (
+                            <p className="text-xs text-destructive">
+                                {err('child_ids')}
+                            </p>
+                        )}
                     </div>
 
                     <div className="flex gap-3 border-t pt-2">

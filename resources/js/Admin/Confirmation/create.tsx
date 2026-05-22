@@ -12,7 +12,12 @@ import {
 } from '@/components/ui/select';
 
 type Child = { id: number; name: string; surname: string };
-type Parent = { id: number; name: string; surname: string; child_id: number };
+type Parent = {
+    id: number;
+    name: string;
+    surname: string;
+    children?: { id: number }[];
+};
 type Vaccine = { id: number; name: string };
 
 type FormState = {
@@ -59,7 +64,9 @@ export default function Create() {
     const err = (field: keyof FormState) => errors[field]?.[0];
 
     const handleChildChange = (childId: string) => {
-        const matched = parents.find((p) => String(p.child_id) === childId);
+        const matched = parents.find((p) =>
+            p.children?.some((c) => String(c.id) === childId),
+        );
         setForm((prev) => ({
             ...prev,
             child_id: childId,

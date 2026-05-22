@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import axios from 'axios';
 import { Pencil, Plus, RotateCcw, Trash2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +12,13 @@ type Confirmation = {
     vaccine?: { id: number; name: string; code: string };
 };
 
+type ChildWithStatus = {
+    id: number;
+    name: string;
+    surname: string;
+    confirmations?: Confirmation[];
+};
+
 type Parent = {
     id: number;
     name: string;
@@ -20,12 +26,10 @@ type Parent = {
     email: string;
     phone_number: number;
     personal_number: string;
-    child_id: number;
-    child?: { id: number; name: string; surname: string };
-    confirmations?: Confirmation[];
+    children?: ChildWithStatus[];
 };
 
-const statusVariant: Record<
+const statusMeta: Record<
     Confirmation['status'],
     { label: string; className: string }
 > = {
@@ -167,10 +171,7 @@ export default function Index() {
                                         Personal No.
                                     </th>
                                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                                        Child
-                                    </th>
-                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                                        Vaccine Status
+                                        Children &amp; Vaccine Status
                                     </th>
                                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">
                                         Actions
@@ -211,66 +212,122 @@ export default function Index() {
                                                 {parent.personal_number}
                                             </td>
                                             <td className="px-4 py-3">
-                                                {parent.child ? (
-                                                    `${parent.child.name} ${parent.child.surname}`
-                                                ) : (
-                                                    <span className="text-muted-foreground">
-                                                        —
-                                                    </span>
-                                                )}
-                                            </td>
-                                            {/* Vaccine Status */}
-                                            <td className="px-4 py-3">
-                                                {parent.confirmations &&
-                                                parent.confirmations.length >
-                                                    0 ? (
-                                                    <div className="flex flex-wrap gap-1">
-                                                        {parent.confirmations
-                                                            .slice(0, 3)
-                                                            .map((c) => (
-                                                                <span
-                                                                    key={c.id}
-                                                                    title={
-                                                                        c
-                                                                            .vaccine
-                                                                            ?.name ??
-                                                                        ''
-                                                                    }
-                                                                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${
-                                                                        statusVariant[
-                                                                            c
-                                                                                .status
-                                                                        ]
-                                                                            .className
-                                                                    }`}
-                                                                >
-                                                                    {c.vaccine
-                                                                        ?.code
-                                                                        ? `${c.vaccine.code} · `
-                                                                        : ''}
-                                                                    {
-                                                                        statusVariant[
-                                                                            c
-                                                                                .status
-                                                                        ].label
-                                                                    }
-                                                                </span>
-                                                            ))}
-                                                        {parent.confirmations
-                                                            .length > 3 && (
-                                                            <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
-                                                                +
-                                                                {parent
-                                                                    .confirmations
-                                                                    .length -
-                                                                    3}{' '}
-                                                                more
-                                                            </span>
+                                                {parent.children &&
+                                                parent.children.length > 0 ? (
+                                                    <div className="space-y-2">
+                                                        {parent.children.map(
+                                                            (child) => {
+                                                                const total =
+                                                                    child
+                                                                        .confirmations
+                                                                        ?.length ??
+                                                                    0;
+                                                                const taken =
+                                                                    child.confirmations?.filter(
+                                                                        (c) =>
+                                                                            c.status ===
+                                                                            'taken',
+                                                                    ).length ??
+                                                                    0;
+                                                                const needAttention =
+                                                                    child.confirmations?.filter(
+                                                                        (c) =>
+                                                                            c.status ===
+                                                                                'missed' ||
+                                                                            c.status ===
+                                                                                'delayed',
+                                                                    ).length ??
+                                                                    0;
+                                                                return (
+                                                                    <div
+                                                                        key={
+                                                                            child.id
+                                                                        }
+                                                                        className="rounded-lg border bg-muted/30 px-3 py-2"
+                                                                    >
+                                                                        <div className="flex items-center justify-between gap-2">
+                                                                            <span className="text-sm font-semibold">
+                                                                                {
+                                                                                    child.name
+                                                                                }{' '}
+                                                                                {
+                                                                                    child.surname
+                                                                                }
+                                                                            </span>
+                                                                            {total >
+                                                                                0 && (
+                                                                                <span className="text-xs text-muted-foreground">
+                                                                                    {
+                                                                                        taken
+                                                                                    }
+                                                                                    /
+                                                                                    {
+                                                                                        total
+                                                                                    }{' '}
+                                                                                    taken
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                        {total >
+                                                                        0 ? (
+                                                                            <div className="mt-1.5 flex flex-wrap gap-1">
+                                                                                {child
+                                                                                    .confirmations!.slice(
+                                                                                        0,
+                                                                                        4,
+                                                                                    )
+                                                                                    .map(
+                                                                                        (
+                                                                                            conf,
+                                                                                        ) => (
+                                                                                            <span
+                                                                                                key={
+                                                                                                    conf.id
+                                                                                                }
+                                                                                                title={`${conf.vaccine?.name ?? 'Unknown'}: ${statusMeta[conf.status].label}`}
+                                                                                                className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${statusMeta[conf.status].className}`}
+                                                                                            >
+                                                                                                {conf
+                                                                                                    .vaccine
+                                                                                                    ?.code ??
+                                                                                                    '?'}
+                                                                                            </span>
+                                                                                        ),
+                                                                                    )}
+                                                                                {total >
+                                                                                    4 && (
+                                                                                    <span className="inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                                                                                        +
+                                                                                        {total -
+                                                                                            4}
+                                                                                    </span>
+                                                                                )}
+                                                                                {needAttention >
+                                                                                    0 && (
+                                                                                    <span className="ml-auto inline-flex items-center rounded-full border border-red-200 bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold text-red-700">
+                                                                                        {
+                                                                                            needAttention
+                                                                                        }{' '}
+                                                                                        need
+                                                                                        attention
+                                                                                    </span>
+                                                                                )}
+                                                                            </div>
+                                                                        ) : (
+                                                                            <p className="mt-1 text-xs text-muted-foreground">
+                                                                                No
+                                                                                vaccine
+                                                                                records
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            },
                                                         )}
                                                     </div>
                                                 ) : (
                                                     <span className="text-xs text-muted-foreground">
-                                                        No records
+                                                        No children assigned
                                                     </span>
                                                 )}
                                             </td>

@@ -13,7 +13,7 @@ class ParentsController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $parents = Parents::with(['child', 'confirmations.vaccine'])->get();
+            $parents = Parents::with(['children.confirmations.vaccine'])->get();
 
             return response()->json($parents, 200);
         } catch (\Exception $e) {
@@ -30,11 +30,16 @@ class ParentsController extends Controller
                 'email'           => 'required|email|unique:parent,email',
                 'phone_number'    => 'required|integer',
                 'personal_number' => 'required|string|unique:parent,personal_number',
-                'child_id'        => 'required|integer|exists:children,id',
+                'child_ids'       => 'required|array|min:1',
+                'child_ids.*'     => 'integer|exists:children,id',
             ]);
 
+            $childIds = $validated['child_ids'];
+            unset($validated['child_ids']);
+
             $parent = Parents::create($validated);
-            $parent->load(['child', 'confirmations.vaccine']);
+            $parent->children()->sync($childIds);
+            $parent->load(['children.confirmations.vaccine']);
 
             return response()->json($parent, 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -47,7 +52,7 @@ class ParentsController extends Controller
     public function show(string $id): JsonResponse
     {
         try {
-            $parent = Parents::with(['child', 'confirmations.vaccine'])->findOrFail($id);
+            $parent = Parents::with(['children.confirmations.vaccine'])->findOrFail($id);
 
             return response()->json($parent, 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
@@ -68,11 +73,18 @@ class ParentsController extends Controller
                 'email'           => ['sometimes', 'email', Rule::unique('parent', 'email')->ignore($parent->id)],
                 'phone_number'    => 'sometimes|integer',
                 'personal_number' => ['sometimes', 'string', Rule::unique('parent', 'personal_number')->ignore($parent->id)],
-                'child_id'        => 'sometimes|integer|exists:children,id',
+                'child_ids'       => 'sometimes|array',
+                'child_ids.*'     => 'integer|exists:children,id',
             ]);
 
+            if (array_key_exists('child_ids', $validated)) {
+                $childIds = $validated['child_ids'];
+                unset($validated['child_ids']);
+                $parent->children()->sync($childIds);
+            }
+
             $parent->update($validated);
-            $parent->load(['child', 'confirmations.vaccine']);
+            $parent->load(['children.confirmations.vaccine']);
 
             return response()->json($parent, 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
@@ -88,6 +100,7 @@ class ParentsController extends Controller
     {
         try {
             $parent = Parents::findOrFail($id);
+            $parent->children()->detach(); // clean up pivot
             $parent->delete();
 
             return response()->json(['message' => 'Parent deleted successfully.'], 200);

@@ -6,6 +6,7 @@ use App\Models\Confirmation;
 use App\Models\doctor;
 use App\Models\Parents;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Children extends Model
@@ -23,9 +24,17 @@ class Children extends Model
         'chronic_diseases',
     ];
 
+    /** Legacy: parents linked via child_id column */
     public function parents(): HasMany
     {
         return $this->hasMany(Parents::class, 'child_id');
+    }
+
+    /** Many parents via pivot */
+    public function parentsList(): BelongsToMany
+    {
+        return $this->belongsToMany(Parents::class, 'child_parent', 'child_id', 'parent_id')
+                    ->withTimestamps();
     }
 
     public function doctors(): HasMany
