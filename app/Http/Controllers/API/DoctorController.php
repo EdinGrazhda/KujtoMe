@@ -10,6 +10,11 @@ use Illuminate\Validation\Rule;
 
 class DoctorController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(doctor::class, 'doctor');
+    }
+
     public function index(): JsonResponse
     {
         try {

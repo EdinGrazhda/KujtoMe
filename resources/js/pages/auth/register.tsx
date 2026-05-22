@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Form, Head } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
@@ -14,6 +15,8 @@ type Props = {
 };
 
 export default function Register({ passwordRules }: Props) {
+    const [role, setRole] = useState<'Child' | 'Parent' | ''>('');
+
     return (
         <>
             <Head title="Register" />
@@ -56,6 +59,37 @@ export default function Register({ passwordRules }: Props) {
                                     placeholder="email@example.com"
                                 />
                                 <InputError message={errors.email} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label>I am a…</Label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {(['Parent', 'Child'] as const).map((r) => (
+                                        <label
+                                            key={r}
+                                            className={`flex cursor-pointer flex-col items-center gap-1.5 rounded-xl border-2 px-4 py-3 text-sm font-medium transition-colors ${
+                                                role === r
+                                                    ? 'border-primary bg-primary/5 text-primary'
+                                                    : 'border-border text-muted-foreground hover:border-primary/40'
+                                            }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="role"
+                                                value={r}
+                                                required
+                                                checked={role === r}
+                                                onChange={() => setRole(r)}
+                                                className="sr-only"
+                                            />
+                                            <span className="text-lg">
+                                                {r === 'Parent' ? '👨‍👧' : '🧒'}
+                                            </span>
+                                            {r}
+                                        </label>
+                                    ))}
+                                </div>
+                                <InputError message={errors.role} />
                             </div>
 
                             <div className="grid gap-2">

@@ -3,12 +3,19 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Mail\VaccineReminderMail;
 use App\Models\Confirmation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class ConfirmationController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Confirmation::class, 'confirmation');
+    }
+
     public function index(): JsonResponse
     {
         try {
@@ -96,18 +103,28 @@ class ConfirmationController extends Controller
     public function remind(string $id): JsonResponse
     {
         try {
-            $confirmation = Confirmation::with(['child', 'parent', 'vaccine'])->findOrFail($id);
+            $confirmation = Confirmation::with(['child.doctors', 'parent', 'vaccine'])->findOrFail($id);
 
-            // TODO: dispatch a real notification/email to $confirmation->parent->email
-            // For now we log the intent and return success.
-            \Illuminate\Support\Facades\Log::info('Reminder requested', [
-                'confirmation_id' => $confirmation->id,
-                'parent_email'    => $confirmation->parent?->email,
-                'vaccine'         => $confirmation->vaccine?->name,
-            ]);
+            $parentEmail = $confirmation->parent?->email;
+
+            if (! $parentEmail) {
+                return response()->json(['message' => 'Parent has no email address on file.'], 422);
+            }
+
+            $doctor = $confirmation->child?->doctors()->first();
+
+            // Build the mailable — doctor is passed as constructor arg so the view gets it
+            $mailable = new VaccineReminderMail($confirmation, $doctor);
+
+            // Also CC the doctor if they have a separate email
+            if ($doctor?->email && $doctor->email !== $parentEmail) {
+                $mailable->cc($doctor->email);
+            }
+
+            Mail::to($parentEmail)->send($mailable);
 
             return response()->json([
-                'message' => 'Reminder sent to ' . ($confirmation->parent?->email ?? 'parent'),
+                'message' => 'Reminder sent to ' . $parentEmail,
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
             return response()->json(['message' => 'Confirmation not found.'], 404);

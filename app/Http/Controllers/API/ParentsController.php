@@ -10,6 +10,11 @@ use Illuminate\Validation\Rule;
 
 class ParentsController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Parents::class, 'parent');
+    }
+
     public function index(): JsonResponse
     {
         try {
