@@ -67,7 +67,10 @@ class ConfirmationSeeder extends Seeder
         ];
 
         foreach ($confirmations as $conf) {
-            Confirmation::create($conf);
+            Confirmation::firstOrCreate(
+                ['parent_id' => $conf['parent_id'], 'child_id' => $conf['child_id'], 'vaccine_id' => $conf['vaccine_id']],
+                $conf
+            );
         }
     }
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import { Mail, Phone, Plus, Stethoscope, UserCheck, Users } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
@@ -12,6 +12,7 @@ import {
     StatCard,
     StatusBadge,
 } from '@/components/crud';
+import type { Auth } from '@/types/auth';
 import type { BreadcrumbItem } from '@/types';
 
 type Doctor = {
@@ -30,17 +31,24 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function DoctorIndex() {
+    const { auth } = usePage<{ auth: Auth }>().props;
     const [doctors, setDoctors] = useState<Doctor[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const canViewDoctors = (auth.permissions ?? []).includes('Doctors_View');
 
     useEffect(() => {
+        if (!canViewDoctors) {
+            setLoading(false);
+            return;
+        }
+
         axios
             .get<Doctor[]>('/api/doctors')
             .then((r) => setDoctors(r.data))
             .finally(() => setLoading(false));
-    }, []);
+    }, [canViewDoctors]);
 
     const filtered = doctors.filter((d) => {
         const matchSearch = `${d.name} ${d.surname} ${d.email}`
@@ -54,7 +62,18 @@ export default function DoctorIndex() {
         if (!confirm('Delete this doctor?')) return;
         axios
             .delete(`/api/doctors/${id}`)
-            .then(() => setDoctors((prev) => prev.filter((d) => d.id !== id)));
+            .then(() => setDoctors((prev) => prev.filter((d) => d.id !== id)))
+            .catch((error) => {
+                if (
+                    axios.isAxiosError(error) &&
+                    error.response?.status === 403
+                ) {
+                    alert('You do not have permission to delete doctors.');
+                    return;
+                }
+
+                alert('Failed to delete doctor.');
+            });
     };
 
     return (
@@ -144,6 +163,14 @@ export default function DoctorIndex() {
                                 />
                             ))}
                         </div>
+                    ) : !canViewDoctors ? (
+                        <EmptyState
+                            icon={Stethoscope}
+                            title="No access to doctors"
+                            description="Your account does not have permission to view doctors."
+                            actionLabel="Go to dashboard"
+                            actionHref="/dashboard"
+                        />
                     ) : filtered.length === 0 ? (
                         <EmptyState
                             icon={Stethoscope}

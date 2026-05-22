@@ -1,10 +1,10 @@
-import { Link } from '@inertiajs/react';
+import { Link, type InertiaLinkProps } from '@inertiajs/react';
 import { ChevronRight, Plus, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export type BreadcrumbItem = {
     title: string;
-    href?: string;
+    href?: NonNullable<InertiaLinkProps['href']>;
 };
 
 type PageHeaderProps = {

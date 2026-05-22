@@ -78,7 +78,7 @@ class DoctorSeeder extends Seeder
         ];
 
         foreach ($doctors as $doc) {
-            doctor::create($doc);
+            doctor::firstOrCreate(['email' => $doc['email']], $doc);
         }
     }
 }

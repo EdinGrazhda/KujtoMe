@@ -34,12 +34,12 @@ return new class extends Migration
 
         $parent = Role::firstOrCreate(['name' => 'Parent', 'guard_name' => 'web']);
         $parent->syncPermissions([
-            'Children_View', 'Vaccines_View', 'Confirmations_View',
+            'Children_View', 'Vaccines_View', 'Confirmations_View', 'Confirmations_Update',
         ]);
 
         $child = Role::firstOrCreate(['name' => 'Child', 'guard_name' => 'web']);
         $child->syncPermissions([
-            'Children_View', 'Confirmations_View',
+            'Children_View', 'Confirmations_View', 'Confirmations_Update',
         ]);
     }
 

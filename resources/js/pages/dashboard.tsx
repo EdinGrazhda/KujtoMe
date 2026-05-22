@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import {
     Activity,
@@ -17,6 +17,7 @@ import {
     XCircle,
 } from 'lucide-react';
 import { dashboard } from '@/routes';
+import type { Auth } from '@/types/auth';
 
 type Confirmation = {
     id: number;
@@ -142,19 +143,37 @@ function StatCard({
 }
 
 export default function Dashboard() {
+    const { auth } = usePage<{ auth: Auth }>().props;
     const [confirmations, setConfirmations] = useState<Confirmation[]>([]);
     const [children, setChildren] = useState<Child[]>([]);
     const [doctors, setDoctors] = useState<Doctor[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const userPermissions = new Set(auth.permissions ?? []);
+    const canViewConfirmations = userPermissions.has('Confirmations_View');
+    const canViewChildren = userPermissions.has('Children_View');
+    const canViewDoctors = userPermissions.has('Doctors_View');
+
     useEffect(() => {
-        Promise.all([
-            axios
-                .get<Confirmation[]>('/api/confirmations')
-                .catch(() => ({ data: MOCK_CONFIRMATIONS })),
-            axios.get<Child[]>('/api/children').catch(() => ({ data: [] })),
-            axios.get<Doctor[]>('/api/doctors').catch(() => ({ data: [] })),
-        ])
+        const confirmationsRequest = canViewConfirmations
+            ? axios
+                  .get<Confirmation[]>('/api/confirmations')
+                  .catch(() => ({ data: MOCK_CONFIRMATIONS }))
+            : Promise.resolve({ data: MOCK_CONFIRMATIONS as Confirmation[] });
+
+        const childrenRequest = canViewChildren
+            ? axios
+                  .get<Child[]>('/api/children')
+                  .catch(() => ({ data: [] as Child[] }))
+            : Promise.resolve({ data: [] as Child[] });
+
+        const doctorsRequest = canViewDoctors
+            ? axios
+                  .get<Doctor[]>('/api/doctors')
+                  .catch(() => ({ data: [] as Doctor[] }))
+            : Promise.resolve({ data: [] as Doctor[] });
+
+        Promise.all([confirmationsRequest, childrenRequest, doctorsRequest])
             .then(([conf, ch, doc]) => {
                 setConfirmations(
                     conf.data.length ? conf.data : MOCK_CONFIRMATIONS,
@@ -163,7 +182,7 @@ export default function Dashboard() {
                 setDoctors(doc.data);
             })
             .finally(() => setLoading(false));
-    }, []);
+    }, [canViewChildren, canViewConfirmations, canViewDoctors]);
 
     const counts = {
         missed: confirmations.filter((c) => c.status === 'missed').length,

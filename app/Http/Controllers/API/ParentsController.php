@@ -54,10 +54,10 @@ class ParentsController extends Controller
         }
     }
 
-    public function show(string $id): JsonResponse
+    public function show(Parents $parent): JsonResponse
     {
         try {
-            $parent = Parents::with(['children.confirmations.vaccine'])->findOrFail($id);
+            $parent->load(['children.confirmations.vaccine']);
 
             return response()->json($parent, 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
@@ -67,10 +67,9 @@ class ParentsController extends Controller
         }
     }
 
-    public function update(Request $request, string $id): JsonResponse
+    public function update(Request $request, Parents $parent): JsonResponse
     {
         try {
-            $parent = Parents::findOrFail($id);
 
             $validated = $request->validate([
                 'name'            => 'sometimes|string|max:255',
@@ -101,12 +100,11 @@ class ParentsController extends Controller
         }
     }
 
-    public function destroy(string $id): JsonResponse
+    public function destroy(Parents $parent): JsonResponse
     {
         try {
-            $parent = Parents::findOrFail($id);
             $parent->children()->detach(); // clean up pivot
-            $parent->delete();
+            Parents::destroy($parent->id);
 
             return response()->json(['message' => 'Parent deleted successfully.'], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import axios from 'axios';
 import {
     AlertTriangle,
@@ -15,11 +16,18 @@ import {
 } from 'lucide-react';
 import { ConfirmationStepper } from '@/components/ConfirmationStepper';
 import type { ConfirmationStatus } from '@/components/ConfirmationStepper';
+import type { Auth } from '@/types/auth';
 
 export type ConfirmationRecord = {
     id: number;
     status: ConfirmationStatus;
-    child?: { id: number; name: string; surname: string; blood_type?: string };
+    child?: {
+        id: number;
+        name: string;
+        surname: string;
+        blood_type?: string;
+        doctors?: { id: number; name: string; surname: string }[];
+    };
     parent?: { id: number; name: string; surname: string; email?: string };
     vaccine?: { id: number; name: string };
 };
@@ -74,6 +82,10 @@ export function ConfirmationCard({
     onDelete,
     expanded = false,
 }: Props) {
+    const { auth } = usePage<{ auth: Auth }>().props;
+    const canUpdateStatus = (auth.permissions ?? []).includes(
+        'Confirmations_Update',
+    );
     const [open, setOpen] = useState(expanded);
     const [loading, setLoading] = useState(false);
     const [remindState, setRemindState] = useState<'idle' | 'loading' | 'sent'>(
@@ -94,8 +106,14 @@ export function ConfirmationCard({
                 vaccine_id: c.vaccine?.id,
             });
             onStatusChange?.(c.id, newStatus);
-        } catch {
-            alert('Could not update status.');
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.status === 403) {
+                alert(
+                    'You do not have permission to update confirmation status.',
+                );
+            } else {
+                alert('Could not update status.');
+            }
         } finally {
             setLoading(false);
         }
@@ -202,7 +220,7 @@ export function ConfirmationCard({
                     <ConfirmationStepper status={c.status} />
 
                     {/* Info grid */}
-                    <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                         {[
                             {
                                 icon: User,
@@ -218,6 +236,13 @@ export function ConfirmationCard({
                                 icon: Syringe,
                                 label: 'Vaccine',
                                 value: c.vaccine?.name ?? 'N/A',
+                            },
+                            {
+                                icon: Stethoscope,
+                                label: 'Doctor',
+                                value: c.child?.doctors?.[0]
+                                    ? `${c.child.doctors[0].name} ${c.child.doctors[0].surname}`
+                                    : 'No doctor assigned',
                             },
                             {
                                 icon: AlertTriangle,
@@ -242,7 +267,7 @@ export function ConfirmationCard({
 
                     {/* Action buttons */}
                     <div className="mt-4 flex flex-wrap gap-2">
-                        {c.status !== 'upcoming' && (
+                        {canUpdateStatus && c.status !== 'upcoming' && (
                             <button
                                 disabled={loading}
                                 onClick={() => patch('upcoming')}
@@ -251,7 +276,7 @@ export function ConfirmationCard({
                                 <Clock className="h-3.5 w-3.5" /> Mark Upcoming
                             </button>
                         )}
-                        {c.status !== 'taken' && (
+                        {canUpdateStatus && c.status !== 'taken' && (
                             <button
                                 disabled={loading}
                                 onClick={() => patch('taken')}
@@ -261,7 +286,7 @@ export function ConfirmationCard({
                                 Taken
                             </button>
                         )}
-                        {c.status !== 'delayed' && (
+                        {canUpdateStatus && c.status !== 'delayed' && (
                             <button
                                 disabled={loading}
                                 onClick={() => patch('delayed')}
@@ -271,7 +296,7 @@ export function ConfirmationCard({
                                 Delayed
                             </button>
                         )}
-                        {c.status !== 'missed' && (
+                        {canUpdateStatus && c.status !== 'missed' && (
                             <button
                                 disabled={loading}
                                 onClick={() => patch('missed')}

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\doctor;
+use App\Models\doctor as Doctor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -12,13 +12,13 @@ class DoctorController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(doctor::class, 'doctor');
+        $this->authorizeResource(Doctor::class, 'doctor');
     }
 
     public function index(): JsonResponse
     {
         try {
-            $doctors = doctor::with('child')->get();
+            $doctors = Doctor::with('child')->get();
 
             return response()->json($doctors, 200);
         } catch (\Exception $e) {
@@ -38,7 +38,7 @@ class DoctorController extends Controller
                 'status'       => 'required|in:pending,missed',
             ]);
 
-            $doctor = doctor::create($validated);
+            $doctor = Doctor::create($validated);
             $doctor->load('child');
 
             return response()->json($doctor, 201);
@@ -49,10 +49,10 @@ class DoctorController extends Controller
         }
     }
 
-    public function show(string $id): JsonResponse
+    public function show(Doctor $doctor): JsonResponse
     {
         try {
-            $doctor = doctor::with('child')->findOrFail($id);
+            $doctor->load('child');
 
             return response()->json($doctor, 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
@@ -62,11 +62,9 @@ class DoctorController extends Controller
         }
     }
 
-    public function update(Request $request, string $id): JsonResponse
+    public function update(Request $request, Doctor $doctor): JsonResponse
     {
         try {
-            $doctor = doctor::findOrFail($id);
-
             $validated = $request->validate([
                 'name'         => 'sometimes|string|max:255',
                 'surname'      => 'sometimes|string|max:255',
@@ -89,11 +87,10 @@ class DoctorController extends Controller
         }
     }
 
-    public function destroy(string $id): JsonResponse
+    public function destroy(Doctor $doctor): JsonResponse
     {
         try {
-            $doctor = doctor::findOrFail($id);
-            $doctor->delete();
+            Doctor::destroy($doctor->id);
 
             return response()->json(['message' => 'Doctor deleted successfully.'], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {

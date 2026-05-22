@@ -57,11 +57,9 @@ class vaccineController extends Controller
         }
     }
 
-    public function show(string $id): JsonResponse
+    public function show(Vaccine $vaccine): JsonResponse
     {
         try {
-            $vaccine = Vaccine::findOrFail($id);
-
             return response()->json($vaccine, 200);
         } catch (ModelNotFoundException) {
             return response()->json(['message' => 'Vaccine not found.'], 404);
@@ -70,10 +68,9 @@ class vaccineController extends Controller
         }
     }
 
-    public function update(Request $request, string $id): JsonResponse
+    public function update(Request $request, Vaccine $vaccine): JsonResponse
     {
         try {
-            $vaccine = Vaccine::findOrFail($id);
 
             $validated = $request->validate([
                 'code' => ['sometimes', 'string', 'max:255', Rule::unique('vaccine', 'code')->ignore($vaccine->id)],
@@ -107,14 +104,13 @@ class vaccineController extends Controller
         }
     }
 
-    public function destroy(string $id): JsonResponse
+    public function destroy(Vaccine $vaccine): JsonResponse
     {
         try {
-            $vaccine = Vaccine::findOrFail($id);
             if ($vaccine->image) {
                 Storage::disk('public')->delete($vaccine->image);
             }
-            $vaccine->delete();
+            Vaccine::destroy($vaccine->id);
 
             return response()->json(['message' => 'Vaccine deleted successfully.'], 200);
         } catch (ModelNotFoundException) {

@@ -93,7 +93,7 @@ class ChildrenSeeder extends Seeder
         ];
 
         foreach ($children as $child) {
-            Children::create($child);
+            Children::firstOrCreate(['personal_number' => $child['personal_number']], $child);
         }
     }
 }

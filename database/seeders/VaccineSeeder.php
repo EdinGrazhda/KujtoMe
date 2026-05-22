@@ -113,7 +113,7 @@ class VaccineSeeder extends Seeder
         ];
 
         foreach ($vaccines as $vaccine) {
-            Vaccine::create($vaccine);
+            Vaccine::firstOrCreate(['code' => $vaccine['code']], $vaccine);
         }
     }
 }
