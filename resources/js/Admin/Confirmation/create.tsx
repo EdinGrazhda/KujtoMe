@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select';
 
 type Child = { id: number; name: string; surname: string };
-type Parent = { id: number; name: string; surname: string };
+type Parent = { id: number; name: string; surname: string; child_id: number };
 type Vaccine = { id: number; name: string };
 
 type FormState = {
@@ -57,6 +57,15 @@ export default function Create() {
         setForm((prev) => ({ ...prev, [field]: value }));
 
     const err = (field: keyof FormState) => errors[field]?.[0];
+
+    const handleChildChange = (childId: string) => {
+        const matched = parents.find((p) => String(p.child_id) === childId);
+        setForm((prev) => ({
+            ...prev,
+            child_id: childId,
+            parent_id: matched ? String(matched.id) : prev.parent_id,
+        }));
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -113,7 +122,7 @@ export default function Create() {
                             <Label>Child</Label>
                             <Select
                                 value={form.child_id}
-                                onValueChange={(v) => set('child_id', v)}
+                                onValueChange={handleChildChange}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select a child" />
@@ -137,7 +146,14 @@ export default function Create() {
                             )}
                         </div>
                         <div className="space-y-1.5">
-                            <Label>Parent</Label>
+                            <Label>
+                                Parent
+                                {form.child_id && form.parent_id && (
+                                    <span className="ml-2 text-xs font-normal text-muted-foreground">
+                                        auto-selected
+                                    </span>
+                                )}
+                            </Label>
                             <Select
                                 value={form.parent_id}
                                 onValueChange={(v) => set('parent_id', v)}

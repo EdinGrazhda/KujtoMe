@@ -13,10 +13,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
-            'name'  => 'Admin',
-            'email' => 'admin@kujtome.ks',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'admin@kujtome.ks'],
+            ['name'  => 'Admin'],
+        );
 
         $this->call([
             VaccineSeeder::class,

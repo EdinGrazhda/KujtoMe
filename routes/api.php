@@ -18,4 +18,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('parents', ParentsController::class);
     Route::apiResource('vaccines', vaccineController::class);
     Route::apiResource('confirmations', ConfirmationController::class);
+    Route::post('confirmations/{id}/remind',      [ConfirmationController::class, 'remind']);
+    Route::post('confirmations/{id}/doctor-call', [ConfirmationController::class, 'doctorCall']);
 });

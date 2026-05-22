@@ -76,6 +76,12 @@ export function ConfirmationCard({
 }: Props) {
     const [open, setOpen] = useState(expanded);
     const [loading, setLoading] = useState(false);
+    const [remindState, setRemindState] = useState<'idle' | 'loading' | 'sent'>(
+        'idle',
+    );
+    const [doctorState, setDoctorState] = useState<'idle' | 'loading' | 'sent'>(
+        'idle',
+    );
     const risk = riskLevel(c.status);
 
     const patch = async (newStatus: ConfirmationStatus) => {
@@ -92,6 +98,30 @@ export function ConfirmationCard({
             alert('Could not update status.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const sendReminder = async () => {
+        setRemindState('loading');
+        try {
+            await axios.post(`/api/confirmations/${c.id}/remind`);
+            setRemindState('sent');
+            setTimeout(() => setRemindState('idle'), 3000);
+        } catch {
+            alert('Could not send reminder.');
+            setRemindState('idle');
+        }
+    };
+
+    const requestDoctorCall = async () => {
+        setDoctorState('loading');
+        try {
+            await axios.post(`/api/confirmations/${c.id}/doctor-call`);
+            setDoctorState('sent');
+            setTimeout(() => setDoctorState('idle'), 3000);
+        } catch {
+            alert('Could not request doctor call.');
+            setDoctorState('idle');
         }
     };
 
@@ -250,12 +280,37 @@ export function ConfirmationCard({
                                 <XCircle className="h-3.5 w-3.5" /> Mark Missed
                             </button>
                         )}
-                        <button className="inline-flex items-center gap-1.5 rounded-xl bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-100">
-                            <Bell className="h-3.5 w-3.5" /> Send Reminder
+                        <button
+                            disabled={remindState !== 'idle'}
+                            onClick={sendReminder}
+                            className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-colors disabled:opacity-60 ${
+                                remindState === 'sent'
+                                    ? 'bg-violet-100 text-violet-800'
+                                    : 'bg-violet-50 text-violet-700 hover:bg-violet-100'
+                            }`}
+                        >
+                            <Bell className="h-3.5 w-3.5" />
+                            {remindState === 'loading'
+                                ? 'Sending…'
+                                : remindState === 'sent'
+                                  ? 'Reminder Sent ✓'
+                                  : 'Send Reminder'}
                         </button>
-                        <button className="inline-flex items-center gap-1.5 rounded-xl bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-700 transition-colors hover:bg-sky-100">
-                            <PhoneCall className="h-3.5 w-3.5" /> Request Doctor
-                            Call
+                        <button
+                            disabled={doctorState !== 'idle'}
+                            onClick={requestDoctorCall}
+                            className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-colors disabled:opacity-60 ${
+                                doctorState === 'sent'
+                                    ? 'bg-sky-100 text-sky-800'
+                                    : 'bg-sky-50 text-sky-700 hover:bg-sky-100'
+                            }`}
+                        >
+                            <PhoneCall className="h-3.5 w-3.5" />
+                            {doctorState === 'loading'
+                                ? 'Requesting…'
+                                : doctorState === 'sent'
+                                  ? 'Call Requested ✓'
+                                  : 'Request Doctor Call'}
                         </button>
                         <Link
                             href={`/admin/children/${c.child?.id}/timeline`}

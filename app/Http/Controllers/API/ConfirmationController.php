@@ -92,4 +92,48 @@ class ConfirmationController extends Controller
             return response()->json(['message' => 'Failed to delete confirmation.', 'error' => $e->getMessage()], 500);
         }
     }
+
+    public function remind(string $id): JsonResponse
+    {
+        try {
+            $confirmation = Confirmation::with(['child', 'parent', 'vaccine'])->findOrFail($id);
+
+            // TODO: dispatch a real notification/email to $confirmation->parent->email
+            // For now we log the intent and return success.
+            \Illuminate\Support\Facades\Log::info('Reminder requested', [
+                'confirmation_id' => $confirmation->id,
+                'parent_email'    => $confirmation->parent?->email,
+                'vaccine'         => $confirmation->vaccine?->name,
+            ]);
+
+            return response()->json([
+                'message' => 'Reminder sent to ' . ($confirmation->parent?->email ?? 'parent'),
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            return response()->json(['message' => 'Confirmation not found.'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to send reminder.', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function doctorCall(string $id): JsonResponse
+    {
+        try {
+            $confirmation = Confirmation::with(['child', 'parent', 'vaccine'])->findOrFail($id);
+
+            // TODO: dispatch a real doctor-call request notification.
+            \Illuminate\Support\Facades\Log::info('Doctor call requested', [
+                'confirmation_id' => $confirmation->id,
+                'child'           => $confirmation->child?->name . ' ' . $confirmation->child?->surname,
+            ]);
+
+            return response()->json([
+                'message' => 'Doctor call requested for ' . ($confirmation->child?->name ?? 'child'),
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            return response()->json(['message' => 'Confirmation not found.'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to request doctor call.', 'error' => $e->getMessage()], 500);
+        }
+    }
 }
