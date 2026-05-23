@@ -4,18 +4,13 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        {{-- Inline script to detect system dark mode preference and apply it immediately --}}
+        {{-- Force light mode globally --}}
         <script>
             (function() {
-                const appearance = '{{ $appearance ?? "system" }}';
-
-                if (appearance === 'system') {
-                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-                    if (prefersDark) {
-                        document.documentElement.classList.add('dark');
-                    }
-                }
+                localStorage.setItem('appearance', 'light');
+                document.cookie = 'appearance=light;path=/;max-age=' + (365 * 24 * 60 * 60) + ';SameSite=Lax';
+                document.documentElement.classList.remove('dark');
+                document.documentElement.style.colorScheme = 'light';
             })();
         </script>
 

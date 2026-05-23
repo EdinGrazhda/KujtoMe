@@ -387,7 +387,7 @@ function EnhancedRiskCard() {
 
 function JourneyStrip() {
     return (
-        <div className="mt-10 grid max-w-2xl gap-4 sm:grid-cols-3">
+        <div className="mt-8 grid max-w-2xl gap-4 sm:grid-cols-3">
             {journeySteps.map((step) => (
                 <div
                     className="relative overflow-hidden rounded-2xl bg-white/60 p-5 shadow-sm ring-1 ring-slate-200/50 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-md"

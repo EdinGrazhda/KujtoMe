@@ -75,16 +75,11 @@ export function initializeTheme(): void {
         return;
     }
 
-    if (!localStorage.getItem('appearance')) {
-        localStorage.setItem('appearance', 'system');
-        setCookie('appearance', 'system');
-    }
-
-    currentAppearance = getStoredAppearance();
-    applyTheme(currentAppearance);
-
-    // Set up system theme change listener
-    mediaQuery()?.addEventListener('change', handleSystemThemeChange);
+    // Always force light mode
+    currentAppearance = 'light';
+    localStorage.setItem('appearance', 'light');
+    setCookie('appearance', 'light');
+    applyTheme('light');
 }
 
 export function useAppearance(): UseAppearanceReturn {
